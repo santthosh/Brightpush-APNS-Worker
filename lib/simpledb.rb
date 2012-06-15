@@ -4,23 +4,21 @@ require 'yaml'
 # Helper class to manage simple_db
 class SimpleDB
   
+  $config = YAML.load_file("config/aws.yml")
+  
   def self.domain_for_notification
-    config = YAML.load_file("config/aws.yml")
-    return config[ENV['RACK_ENV']]["notifications_domain"]
+    return $config[ENV['RACK_ENV']]["notifications_domain"]
   end
   
   def self.domain_for_notification_queues
-    config = YAML.load_file("config/aws.yml")
-    return config[ENV['RACK_ENV']]["notifications_queues_domain"]
+    return $config[ENV['RACK_ENV']]["notifications_queues_domain"]
   end
   
   # Connect to Simple DB
   def self.get_domain(identifier)
-    config = YAML.load_file("config/aws.yml")
-        
     client = AWS::SimpleDB.new(
-              :access_key_id => config[ENV['RACK_ENV']]["access_key_id"],
-              :secret_access_key => config[ENV['RACK_ENV']]["secret_access_key"])
+              :access_key_id => $config[ENV['RACK_ENV']]["access_key_id"],
+              :secret_access_key => $config[ENV['RACK_ENV']]["secret_access_key"])
     domain = client.domains[identifier]
     
     begin

@@ -1,9 +1,13 @@
 import 'lib/simpledb.rb'
 import 'lib/sqs.rb'
+import 'lib/s3.rb'
+require 'pyapns'
 
 # Schedule a whole bunch of push notifications
 module Process_APNS_PushNotifications
   @queue = :apns_notifier
+  
+  $client = PYAPNS::Client.configure
   
   # Set the status of the notification 
   def self.set_notification_status(item,status,identifier = nil)
@@ -29,6 +33,15 @@ module Process_APNS_PushNotifications
      results = domain.items.where("status = 'pending' AND application_type = ?","ios")
      return results.first;
    end
+   
+  # Send the Push Message to all the given device tokens
+  def self.send_push_message(bundle_id,device_tokens,notification_message)
+    tokens = device_tokens[1..-2].split(',').collect! {|n| n.to_s}
+    
+    puts "#{tokens} #{notification_message}"
+    
+    #$client.notify(bundle_id, tokens, notification_message)
+  end
   
   # Execute the job
   def self.perform
@@ -57,17 +70,28 @@ module Process_APNS_PushNotifications
         
         queue = SQS.get_queue(notification_queue_item.name)
         
+        notification_domain = SimpleDB.get_domain(SimpleDB.domain_for_notification)
+        notification_id = notification_queue_item.attributes['notification_id'].values.first
+        notification_item = notification_domain.items[notification_id]
+        
+        bundle_id = notification_item.attributes['bundle_id'].values.first.to_s
+        certificate = notification_item.attributes['certificate'].values.first.to_s
+        certificate_path = S3.mounted_certificate_path + certificate
+        environment = notification_item.attributes['environment'].values.first.to_s
+        notification_message = notification_item.attributes['message'].values.first.to_s
+        
+        #$client.provision :app_id => bundle_id,
+        #                 :cert => certificate_path, 
+        #                 :env => environment, 
+        #                 :timeout => 15
+        
         unless queue.nil?
           if queue.exists?
-            queue.poll(:initial_timeout => true,
-              :idle_timeout => 5) {
-                |msg| puts msg.body 
+            queue.poll(:initial_timeout => true, :idle_timeout => 5) {
+                |msg| Process_APNS_PushNotifications.send_push_message(bundle_id,msg,notification_message)
             }
-
             queue.delete
           end
-
-          notification_id = notification_queue_item.attributes['notification_id'].values.first
 
           # Delete the entry in the notification.queues table
           notification_queue_item.delete
@@ -80,16 +104,7 @@ module Process_APNS_PushNotifications
 
           # if there are, then quit, else then go ahead and mark this as complete
           if pending_queues.nil? || pending_queues.count == 0
-            notification_domain = SimpleDB.get_domain(SimpleDB.domain_for_notification)
-
-            unless notification_domain.nil?
-                notification_item = notification_domain.items[notification_id]
-
-                unless notification_item.nil?
-                  Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
-                  puts "Processing completed for notification :  #{notification_id}"
-                end 
-            end 
+              Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
           end
         end
         

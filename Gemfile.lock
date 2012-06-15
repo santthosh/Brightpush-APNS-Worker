@@ -1,3 +1,9 @@
+GIT
+  remote: git://github.com/krasio/pyapns_gem
+  revision: 7576a7f42a7c89c9435dc48de24dab9a31a635da
+  specs:
+    PYAPNS (0.3.1)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -76,6 +82,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  PYAPNS!
   aws-sdk
   capistrano (= 2.8.0)
   capistrano-ext (= 1.2.1)
