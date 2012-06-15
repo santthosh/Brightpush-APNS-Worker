@@ -1,0 +1,62 @@
+#!/bin/bash
+function start {
+	mkdir -p ./tmp
+	mkdir -p ./tmp/pids
+	
+	echo "Starting the worker processes..."
+	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier0.pid BACKGROUND=yes QUEUE=apns_notifier bundle exec rake resque:work
+	
+	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier1.pid BACKGROUND=yes QUEUE=apns_notifier bundle exec rake resque:work
+	
+	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier2.pid BACKGROUND=yes QUEUE=apns_notifier bundle exec rake resque:work
+	echo "Done"
+}
+
+function stop {
+	echo "Stopping the rescue processes..."
+
+	if [ -f ./tmp/pids/apns_notifier0.pid ]; then
+		kill -9 `cat ./tmp/pids/apns_notifier0.pid`
+		rm ./tmp/pids/apns_notifier0.pid
+	fi
+	
+	if [ -f ./tmp/pids/apns_notifier1.pid ]; then
+		kill -9 `cat ./tmp/pids/apns_notifier1.pid`
+		rm ./tmp/pids/apns_notifier1.pid
+	fi
+	
+	if [ -f ./tmp/pids/apns_notifier2.pid ]; then
+		kill -9 `cat ./tmp/pids/apns_notifier2.pid`
+		rm ./tmp/pids/apns_notifier2.pid
+	fi
+
+	echo "Done"
+}
+
+if [ $1 == 'start' ]; then
+	ENVIRONMENT="local"
+	if [ -n "$2" ]; then
+		ENVIRONMENT=$2
+	fi
+	
+	start
+fi
+
+if [ $1 == 'stop' ]; then
+	ENVIRONMENT="local"
+	if [ -n "$2" ]; then
+		ENVIRONMENT=$2
+	fi
+	
+	stop
+fi
+
+if [ $1 == 'restart' ]; then
+	ENVIRONMENT="local"
+	if [ -n "$2" ]; then
+		ENVIRONMENT=$2
+	fi
+	
+	stop
+	start
+fi
