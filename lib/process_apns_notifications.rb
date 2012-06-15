@@ -49,42 +49,48 @@ module Process_APNS_PushNotifications
         
         # Read the scheduler_id, if it is the same set status to scheduling 
         #  -- if not quit (this means some other worker has started working)
-        if process_identifier.to_s != notification_item.attributes['process_id'].values.first.to_s
+        if process_identifier.to_s != notification_queue_item.attributes['process_id'].values.first.to_s
           puts "process_id(#{process_identifier}) mismatch with 
                 notification_queue_item.process_id(#{notification_queue_item.attributes['process_id'].values.first})"
           return
         end
         
-        queue = SQS.get_queue(notification_queue_item.item_name)
+        queue = SQS.get_queue(notification_queue_item.name)
+        
+        unless queue.nil?
+          if queue.exists?
+            queue.poll(:initial_timeout => true,
+              :idle_timeout => 5) {
+                |msg| puts msg.body 
+            }
 
-        if queue.exists
-          queue.poll(:initial_timeout => true,:idle_timeout => 120) {
-              # Do the exact processing here 
-              |message| puts messsage.body 
-          }
+            queue.delete
+          end
+
+          notification_id = notification_queue_item.attributes['notification_id'].values.first
+
+          # Delete the entry in the notification.queues table
+          notification_queue_item.delete
           
-          queue.delete
-        end
-        
-        notification_id = notification_queue_item.attributes['notification_id'].values.first.to_s
-        
-        # Delete the entry in the notification.queues table
-        notification_queue_item.delete
-        
-        # Scan the notification.queues table to see if there are more entries in the table for the same notification_id
-        pending_queues = domain.items.where("notification_id = ?",notification_id)
-        
-        # if there are, then quit, else then go ahead and mark this as complete
-        if pending_queues.nil? || pending_queues.empty
-          notification_domain = SimpleDB.get_domain(SimpleDB.domain_for_notification)
+          # Scan the notification.queues table to see if there are more entries in the table for the same notification_id
+          pending_queues = domain.items.where("notification_id = ?",notification_id)
           
-          unless notification_domain.nil?
-              notification_item = notification_domain.items.where("itemName() = ?",notification_id).first
-              
-              unless notification_item.nil?
-                Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
-              end 
-          end 
+          # This is necessary for simple db to catch up
+          sleep(5);
+
+          # if there are, then quit, else then go ahead and mark this as complete
+          if pending_queues.nil? || pending_queues.count == 0
+            notification_domain = SimpleDB.get_domain(SimpleDB.domain_for_notification)
+
+            unless notification_domain.nil?
+                notification_item = notification_domain.items[notification_id]
+
+                unless notification_item.nil?
+                  Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
+                  puts "Processing completed for notification :  #{notification_id}"
+                end 
+            end 
+          end
         end
         
       end
