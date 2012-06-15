@@ -7,7 +7,7 @@ gem 'multi_json','1.3.5'
 gem 'rack'
 gem 'rake'
 gem 'logglier'
-gem 'PYAPNS', :git => 'git://github.com/krasio/pyapns_gem'
+gem 'pyapns'
 
 group :development do
   gem 'capistrano', '2.8.0'

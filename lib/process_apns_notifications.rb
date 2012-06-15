@@ -1,7 +1,7 @@
 import 'lib/simpledb.rb'
 import 'lib/sqs.rb'
 import 'lib/s3.rb'
-require 'PYAPNS'
+require 'pyapns'
 
 # Schedule a whole bunch of push notifications
 module Process_APNS_PushNotifications
