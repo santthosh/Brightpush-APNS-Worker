@@ -3,6 +3,13 @@ import 'lib/sqs.rb'
 import 'lib/s3.rb'
 require 'pyapns'
 
+require 'xmlrpc/client'
+
+XMLRPC::Config.module_eval {
+  remove_const(:ENABLE_NIL_PARSER)     # so that we're not warned about reassigning to a constant
+  const_set(:ENABLE_NIL_PARSER, true)  # so that we don't get "RuntimeError: wrong/unknown XML-RPC type 'nil'"
+}
+
 # Schedule a whole bunch of push notifications
 module Process_APNS_PushNotifications
   @queue = :apns_notifier
@@ -79,8 +86,6 @@ module Process_APNS_PushNotifications
         certificate_path = S3.mounted_certificate_path + certificate
         environment = notification_item.attributes['environment'].values.first.to_s
         notification_message = notification_item.attributes['message'].values.first.to_s
-        
-        XMLRPC::Config::ENABLE_NIL_PARSER = true 
         
         $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
         
