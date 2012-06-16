@@ -36,11 +36,11 @@ module Process_APNS_PushNotifications
    
   # Send the Push Message to all the given device tokens
   def self.send_push_message(bundle_id,device_tokens,notification_message)
-    tokens = device_tokens[1..-2].split(',').collect! {|n| n.to_s}
+    tokens = device_tokens.split(',')
     
     puts "#{tokens} #{notification_message}"
     
-    #$client.notify(bundle_id, tokens, notification_message)
+    $client.notify(bundle_id, tokens, notification_message)
   end
   
   # Execute the job
@@ -80,15 +80,12 @@ module Process_APNS_PushNotifications
         environment = notification_item.attributes['environment'].values.first.to_s
         notification_message = notification_item.attributes['message'].values.first.to_s
         
-        #$client.provision :app_id => bundle_id,
-        #                 :cert => certificate_path, 
-        #                 :env => environment, 
-        #                 :timeout => 15
+        $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
         
         unless queue.nil?
           if queue.exists?
             queue.poll(:initial_timeout => true, :idle_timeout => 5) {
-                |msg| Process_APNS_PushNotifications.send_push_message(bundle_id,msg,notification_message)
+                |msg| Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
             }
             queue.delete
           end
