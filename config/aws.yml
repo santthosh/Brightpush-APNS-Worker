@@ -5,25 +5,25 @@ local:
     notifications_queues_domain: in.localhost.notifications.queues
     access_key_id: AKIAIERRYQXDX7KCTHPQ
     secret_access_key: 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
-    mounted_s3_certificate_bucket: /mnt/s3/local_brightpush_ios_certificates_pem/
+    mounted_s3_certificate_bucket: /mnt/s3/
 
 development:
     notifications_domain: in.brightpushalpha.notifications
     notifications_queues_domain: in.brightpushalpha.notifications.queues
     access_key_id: AKIAIERRYQXDX7KCTHPQ
     secret_access_key: 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
-    mounted_s3_certificate_bucket: /mnt/s3/alpha_brightpush_ios_certificates_pem/
+    mounted_s3_certificate_bucket: /mnt/s3/
 
 test:
     notifications_domain: in.brightpushbeta.notifications
     notifications_queues_domain: in.brightpushbeta.notifications
     access_key_id: AKIAIERRYQXDX7KCTHPQ
     secret_access_key: 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
-    mounted_s3_certificate_bucket: /mnt/s3/beta_brightpush_ios_certificates_pem/
+    mounted_s3_certificate_bucket: /mnt/s3/
     
 production:
     notifications_domain: in.brightpush.notifications
     notifications_queues_domain: in.brightpush.notifications
     access_key_id: AKIAIERRYQXDX7KCTHPQ
     secret_access_key: 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
-    mounted_s3_certificate_bucket: /mnt/s3/brightpush_ios_certificates_pem/
+    mounted_s3_certificate_bucket: /mnt/s3/

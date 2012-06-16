@@ -41,5 +41,9 @@ set :rack_env,"development"
   task :start_workers, :roles => :app do
     run "cd #{release_path} && bundle install"
     run "cd #{release_path} && scripts/workers restart #{rack_env}"
+    run "echo '#{aws_access_key_id}:#{aws_secret_access_key}' > ~/.passwd-s3fs"
+    run "chmod 600 ~/.passwd-s3fs"
+    sudo "umount -l /mnt/s3; true"
+    run "/usr/local/bin/s3fs #{bucket_name} /mnt/s3 -o allow_other"
   end
  end
