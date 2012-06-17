@@ -46,9 +46,16 @@ module Process_APNS_PushNotifications
   def self.send_push_message(bundle_id,device_tokens,notification_message)
     tokens = device_tokens.split(',')
     
-    puts "#{tokens} #{notification_message}"
-    
-    $client.notify(bundle_id, tokens, JSON.parse(notification_message))
+    tokens.each do |token|
+      begin
+       token_list = [token]
+       message_list = [JSON.parse(notification_message)]
+       $client.notify(bundle_id, token_list,message_list)
+      rescue Exception => e
+       puts e.inspect
+       puts e.backtrace
+      end
+    end
   end
   
   # Execute the job
