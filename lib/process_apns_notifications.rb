@@ -99,9 +99,10 @@ module Process_APNS_PushNotifications
         
         unless queue.nil?
           if queue.exists?
-            queue.poll do |msg|
-              Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
-            end
+            queue.poll(:initial_timeout => true,
+              :idle_timeout => 15) {
+                |msg| Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
+            }
             queue.delete
           end
 
