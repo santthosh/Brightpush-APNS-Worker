@@ -1,6 +1,7 @@
 import 'lib/simpledb.rb'
 import 'lib/sqs.rb'
 import 'lib/s3.rb'
+require 'json'
 require 'pyapns'
 
 require 'xmlrpc/client'
@@ -47,7 +48,7 @@ module Process_APNS_PushNotifications
     
     puts "#{tokens} #{notification_message}"
     
-    $client.notify(bundle_id, tokens, notification_message)
+    $client.notify(bundle_id, tokens, JSON.parse(notification_message))
   end
   
   # Execute the job

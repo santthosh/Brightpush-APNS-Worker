@@ -8,6 +8,7 @@ gem 'rack'
 gem 'rake'
 gem 'logglier'
 gem 'pyapns'
+gem 'json'
 
 group :development do
   gem 'capistrano', '2.8.0'
