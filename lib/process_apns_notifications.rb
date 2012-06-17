@@ -94,8 +94,8 @@ module Process_APNS_PushNotifications
           if queue.exists?
             queue.poll do |msg|
               Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
-              queue.delete
             end
+            queue.delete
           end
 
           # Delete the entry in the notification.queues table
