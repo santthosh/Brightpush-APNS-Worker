@@ -67,7 +67,6 @@ module Process_APNS_PushNotifications
       
       unless notification_queue_item.nil?
         process_identifier = SecureRandom.uuid
-        puts "process_id = #{process_identifier}"
         
         # Set the scheduler_id in com.apple.notification
         Process_APNS_PushNotifications.set_queue_status(notification_queue_item,"processing",process_identifier)
@@ -95,6 +94,8 @@ module Process_APNS_PushNotifications
         environment = notification_item.attributes['environment'].values.first.to_s
         notification_message = notification_item.attributes['message'].values.first.to_s
         
+        puts "Starting parallel push with process_id = #{process_identifier} and message #{notification_message}"
+        
         $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
         
         unless queue.nil?
@@ -120,6 +121,8 @@ module Process_APNS_PushNotifications
               Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
           end
         end
+        
+        puts "Finished process with process_id = #{process_identifier}"
         
       end
     end
