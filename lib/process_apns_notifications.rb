@@ -49,6 +49,7 @@ module Process_APNS_PushNotifications
     tokens.each do |token|
        token_list = [token]
        message_list = [JSON.parse(notification_message)]
+       puts "Pushing : #{bundle_id}, #{token_list}, #{message_list}"
        $client.notify(bundle_id, token_list,message_list)
     end
   end
