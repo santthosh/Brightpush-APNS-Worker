@@ -54,6 +54,7 @@ module Process_APNS_PushNotifications
       rescue Exception => e
        puts e.inspect
        puts e.backtrace
+       raise
       end
     end
   end
