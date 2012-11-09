@@ -15,14 +15,14 @@ development:
     mounted_s3_certificate_bucket: /mnt/s3/
 
 test:
-    notifications_domain: in.brightpushbeta.notifications.queues
+    notifications_domain: in.brightpushbeta.notifications
     notifications_queues_domain: in.brightpushbeta.notifications.queues
     access_key_id: AKIAIERRYQXDX7KCTHPQ
     secret_access_key: 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
     mounted_s3_certificate_bucket: /mnt/s3/
     
 production:
-    notifications_domain: in.brightpush.notifications.queues
+    notifications_domain: in.brightpush.notifications
     notifications_queues_domain: in.brightpush.notifications.queues
     access_key_id: AKIAIERRYQXDX7KCTHPQ
     secret_access_key: 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
