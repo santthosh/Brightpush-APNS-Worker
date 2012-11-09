@@ -93,6 +93,7 @@ module Process_APNS_PushNotifications
         puts "Starting parallel push with process_id = #{process_identifier} and message #{notification_message}"
         
         begin   
+          puts "Provisioning : #{bundle_id}, #{certificate_path}, #{environment}"
           $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
         
           unless queue.nil?
