@@ -89,7 +89,7 @@ module Process_APNS_PushNotifications
         notification_id = notification_queue_item.attributes['notification_id'].values.first
         notification_item = notification_domain.items[notification_id]
         
-        bundle_id = notification_item.attributes['bundle_id'].values.first.to_s
+        bundle_id = notification_item.attributes['bundle_id'].values.first.to_s.gsub('.','-')
         certificate = notification_item.attributes['certificate'].values.first.to_s
         certificate_path = S3.mounted_certificate_path + certificate
         environment = notification_item.attributes['environment'].values.first.to_s
@@ -97,30 +97,34 @@ module Process_APNS_PushNotifications
         
         puts "Starting parallel push with process_id = #{process_identifier} and message #{notification_message}"
         
-        $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
+        begin   
+          $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
         
-        unless queue.nil?
-          if queue.exists?
-            queue.poll(:initial_timeout => true,
-              :idle_timeout => 15) {
+          unless queue.nil?
+            if queue.exists?
+              queue.poll(:initial_timeout => true,:idle_timeout => 15) {
                 |msg| Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
-            }
-            queue.delete
-          end
+              }
+              queue.delete
+            end
 
-          # Delete the entry in the notification.queues table
-          notification_queue_item.delete
+            # Delete the entry in the notification.queues table
+            notification_queue_item.delete
           
-          # Scan the notification.queues table to see if there are more entries in the table for the same notification_id
-          pending_queues = domain.items.where("notification_id = ?",notification_id)
+            # Scan the notification.queues table to see if there are more entries in the table for the same notification_id
+            pending_queues = domain.items.where("notification_id = ?",notification_id)
           
-          # This is necessary for simple db to catch up
-          sleep(5);
+            # This is necessary for simple db to catch up
+            sleep(5);
 
-          # if there are, then quit, else then go ahead and mark this as complete
-          if pending_queues.nil? || pending_queues.count == 0
-              Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
+            # if there are, then quit, else then go ahead and mark this as complete
+            if pending_queues.nil? || pending_queues.count == 0
+                Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
+            end
           end
+        rescue
+          # Set the scheduler_id in com.apple.notification
+          Process_APNS_PushNotifications.set_queue_status(notification_queue_item,"errored",process_identifier)
         end
         
         puts "Finished process with process_id = #{process_identifier}"
