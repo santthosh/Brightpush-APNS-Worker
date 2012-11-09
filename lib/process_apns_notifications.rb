@@ -47,15 +47,9 @@ module Process_APNS_PushNotifications
     tokens = device_tokens.split(',')
     
     tokens.each do |token|
-      begin
        token_list = [token]
        message_list = [JSON.parse(notification_message)]
        $client.notify(bundle_id, token_list,message_list)
-      rescue Exception => e
-       puts e.inspect
-       puts e.backtrace
-       raise
-      end
     end
   end
   
@@ -122,13 +116,14 @@ module Process_APNS_PushNotifications
                 Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
             end
           end
-        rescue
+        rescue Exception => e
+          puts e.inspect
+          puts e.backtrace
           # Set the scheduler_id in com.apple.notification
           Process_APNS_PushNotifications.set_queue_status(notification_queue_item,"errored",process_identifier)
         end
         
         puts "Finished process with process_id = #{process_identifier}"
-        
       end
     end
   end
