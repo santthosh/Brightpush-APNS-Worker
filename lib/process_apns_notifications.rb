@@ -49,7 +49,7 @@ module Process_APNS_PushNotifications
     tokens.each do |token|
        token_list = [token]
        message_list = [JSON.parse(notification_message)]
-       puts "Notify: ${bundle_id}, ${token_list} ${message_list}"
+       puts "Notify: #{bundle_id}, #{token_list} #{message_list}"
        $client.notify(bundle_id, token_list,message_list)
     end
   end
@@ -95,8 +95,6 @@ module Process_APNS_PushNotifications
         begin   
           puts "Provisioning : #{bundle_id}, #{certificate_path}, #{environment}"
           $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
-          
-          puts "Provision: ${bundle_id}, ${certificate_path} ${environment}"
         
           unless queue.nil?
             if queue.exists?
