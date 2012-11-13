@@ -49,7 +49,6 @@ module Process_APNS_PushNotifications
     tokens.each do |token|
        token_list = [token]
        message_list = [JSON.parse(notification_message)]
-       puts "Notify: #{bundle_id}, #{token_list} #{message_list}"
        $client.notify(bundle_id, token_list,message_list)
     end
   end
@@ -84,7 +83,7 @@ module Process_APNS_PushNotifications
         notification_id = notification_queue_item.attributes['notification_id'].values.first
         notification_item = notification_domain.items[notification_id]
         
-        bundle_id = notification_item.attributes['bundle_id'].values.first.to_s.gsub('.','-')
+        bundle_id = notification_item.attributes['bundle_id'].values.first.to_s.gsub('.','')
         certificate = notification_item.attributes['certificate'].values.first.to_s
         certificate_path = S3.mounted_certificate_path + certificate
         environment = notification_item.attributes['environment'].values.first.to_s
