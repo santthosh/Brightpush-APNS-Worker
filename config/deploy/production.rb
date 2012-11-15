@@ -1,7 +1,7 @@
 set :branch, "master"
 
 role :web, "ec2-54-245-20-166.us-west-2.compute.amazonaws.com", "ec2-54-245-76-14.us-west-2.compute.amazonaws.com"                         # Your HTTP server, Apache/etc
-role :app, "ec2-54-245-20-166.us-west-2.compute.amazonaws.com"                          # This may be the same as your `Web` server
+role :app, "ec2-54-245-20-166.us-west-2.compute.amazonaws.com", "ec2-54-245-76-14.us-west-2.compute.amazonaws.com"                          # This may be the same as your `Web` server
 
 set :rack_env,"production"
 
