@@ -10,7 +10,7 @@ namespace :resque do
   task :setup do
     require 'resque'
     
-    rack_env = ENV['RACK_ENV'] || 'development'
+    rack_env = ENV['RACK_ENV'] || 'local'
 
     if rack_env == 'production'
       $redis = 'redis.brightpush.in:6379'

@@ -3,6 +3,7 @@ import 'lib/sqs.rb'
 import 'lib/s3.rb'
 require 'json'
 require 'pyapns'
+require 'grocer'
 
 require 'xmlrpc/client'
 
@@ -15,7 +16,8 @@ XMLRPC::Config.module_eval {
 module Process_APNS_PushNotifications
   @queue = :apns_notifier
   
-  $client = PYAPNS::Client.configure
+  #$client = PYAPNS::Client.configure
+  $pusher = nil
   
   # Set the status of the notification 
   def self.set_notification_status(item,status,identifier = nil)
@@ -45,11 +47,30 @@ module Process_APNS_PushNotifications
   # Send the Push Message to all the given device tokens
   def self.send_push_message(bundle_id,device_tokens,notification_message)
     tokens = device_tokens.split(',')
+    message = JSON.parse(notification_message)
+    aps = message["aps"]
+    badge = 0
+    if aps.has_key?("badge")
+      badge = Integer(aps.has_key?("badge"))
+    end
+    alert = aps["alert"]
+    sound = aps["sound"]
+    custom = message.clone
+    custom.delete("aps")
     
     tokens.each do |token|
-       token_list = [token]
-       message_list = [JSON.parse(notification_message)]
-       $client.notify(bundle_id, token_list,message_list)
+      notification = Grocer::Notification.new(
+        device_token: token,
+        alert: alert,
+        badge: badge,
+        sound: sound,
+        custom: custom
+      )
+      
+      pusher.push(notification)
+       #token_list = [token]
+       #message_list = [JSON.parse(notification_message, {:symbolize_names => true})]
+       #$client.notify(bundle_id, token_list,message_list)
     end
   end
   
@@ -88,12 +109,22 @@ module Process_APNS_PushNotifications
         certificate_path = S3.mounted_certificate_path + certificate
         environment = notification_item.attributes['environment'].values.first.to_s
         notification_message = notification_item.attributes['message'].values.first.to_s
+        gateway = "gateway.sandbox.push.apple.com"
+        if environment == "production"
+          gateway = "gateway.push.apple.com"
+        end
         
         puts "Starting parallel push with process_id = #{process_identifier} and message #{notification_message}"
         
         begin   
           puts "Provisioning : #{bundle_id}, #{certificate_path}, #{environment}"
-          $client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
+          $pusher = Grocer.pusher(
+             certificate: certificate_path,      # required
+             gateway: gateway, 
+             port: 2195,                     
+             retries: 3                         
+           )
+          #$client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
         
           unless queue.nil?
             if queue.exists?

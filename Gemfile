@@ -9,6 +9,7 @@ gem 'rake'
 gem 'logglier'
 gem 'pyapns'
 gem 'json'
+gem 'grocer'
 
 group :development do
   gem 'capistrano', '2.8.0'
