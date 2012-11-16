@@ -58,6 +58,8 @@ module Process_APNS_PushNotifications
     custom = message.clone
     custom.delete("aps")
     
+    puts "#{alert} #{sound} #{custom} "
+    
     tokens.each do |token|
       notification = Grocer::Notification.new(
         device_token: token,
