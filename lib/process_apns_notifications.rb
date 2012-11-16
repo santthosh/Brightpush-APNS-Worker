@@ -67,7 +67,7 @@ module Process_APNS_PushNotifications
         custom: custom
       )
       
-      pusher.push(notification)
+      $pusher.push(notification)
        #token_list = [token]
        #message_list = [JSON.parse(notification_message, {:symbolize_names => true})]
        #$client.notify(bundle_id, token_list,message_list)
