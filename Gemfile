@@ -6,8 +6,6 @@ gem 'aws-sdk'
 gem 'multi_json','1.3.5'
 gem 'rack'
 gem 'rake'
-gem 'logglier'
-gem 'pyapns'
 gem 'json'
 gem 'grocer'
 

@@ -2,21 +2,12 @@ import 'lib/simpledb.rb'
 import 'lib/sqs.rb'
 import 'lib/s3.rb'
 require 'json'
-require 'pyapns'
 require 'grocer'
-
-require 'xmlrpc/client'
-
-XMLRPC::Config.module_eval {
-  remove_const(:ENABLE_NIL_PARSER)     # so that we're not warned about reassigning to a constant
-  const_set(:ENABLE_NIL_PARSER, true)  # so that we don't get "RuntimeError: wrong/unknown XML-RPC type 'nil'"
-}
 
 # Schedule a whole bunch of push notifications
 module Process_APNS_PushNotifications
   @queue = :apns_notifier
   
-  #$client = PYAPNS::Client.configure
   $pusher = nil
   
   # Set the status of the notification 
@@ -58,8 +49,6 @@ module Process_APNS_PushNotifications
     custom = message.clone
     custom.delete("aps")
     
-    puts "#{alert} #{sound} #{custom} "
-    
     tokens.each do |token|
       notification = Grocer::Notification.new(
         device_token: token,
@@ -70,9 +59,6 @@ module Process_APNS_PushNotifications
       )
       
       $pusher.push(notification)
-       #token_list = [token]
-       #message_list = [JSON.parse(notification_message, {:symbolize_names => true})]
-       #$client.notify(bundle_id, token_list,message_list)
     end
   end
   
@@ -126,7 +112,6 @@ module Process_APNS_PushNotifications
              port: 2195,                     
              retries: 3                         
            )
-          #$client.provision :app_id => bundle_id, :cert => certificate_path, :env => environment, :timeout => 15
         
           unless queue.nil?
             if queue.exists?
