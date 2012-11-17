@@ -114,7 +114,7 @@ module Process_APNS_PushNotifications
         notification_id = notification_queue_item.attributes['notification_id'].values.first
         notification_item = notification_domain.items[notification_id]
         
-        bundle_id = notification_item.attributes['bundle_id'].values.first.to_s.gsub('.','')
+        bundle_id = notification_item.attributes['bundle_id'].values.first.to_s
         certificate = notification_item.attributes['certificate'].values.first.to_s
         certificate_path = S3.mounted_certificate_path + certificate
         environment = notification_item.attributes['environment'].values.first.to_s
@@ -128,7 +128,7 @@ module Process_APNS_PushNotifications
         if(environment.casecmp("production") == 0)
           feedback_gateway = "feedback.push.apple.com"
         end
-        feedback_domain_name = notification_item.attributes['bundle_id'].dup
+        feedback_domain_name = bundle_id.dup
         if(environment.casecmp("sandbox") == 0)
           feedback_domain_name << ".debug"
         end
