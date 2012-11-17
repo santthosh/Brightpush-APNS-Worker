@@ -9,6 +9,7 @@ module Process_APNS_PushNotifications
   @queue = :apns_notifier
   
   $pusher = nil
+  $feedback = nil
   
   # Set the status of the notification 
   def self.set_notification_status(item,status,identifier = nil)
@@ -62,6 +63,27 @@ module Process_APNS_PushNotifications
     end
   end
   
+  # Call the feedback service to process error messages
+  def self.process_feedback(domain)
+    feedback_count = 0
+    $feedback.each do |attempt|
+      # If token doesn't exist skip it
+     	unless domain.items[attempt.device_token].nil?
+     	  puts "Device #{attempt.device_token} failed at #{attempt.timestamp}"
+     	else 
+     	  # Update it if necessary
+     	  item = domain.items[attempt.device_token]
+     	  if !device_token["active"]
+     	    item.attributes.replace(:active => 0, :if => { :active => 1 })
+     	    item.attributes.replace(:last_registration => attempt.timestamp)
+     	    feedback_count = feeback_count + 1
+     	  end
+     	end
+    end
+    
+    puts "APNS feedback tokens processed #{feedback_count}"
+  end
+  
   # Execute the job
   def self.perform
     domain = SimpleDB.get_domain(SimpleDB.domain_for_notification_queues)
@@ -98,8 +120,17 @@ module Process_APNS_PushNotifications
         environment = notification_item.attributes['environment'].values.first.to_s
         notification_message = notification_item.attributes['message'].values.first.to_s
         gateway = "gateway.sandbox.push.apple.com"
-        if environment == "production"
+        if(environment.casecmp("production") == 0)
           gateway = "gateway.push.apple.com"
+        end
+        
+        feedback_gateway = "feedback.sandbox.push.apple.com"
+        if(environment.casecmp("production") == 0)
+          feedback_gateway = "feedback.push.apple.com"
+        end
+        feedback_domain_name = notification_item.attributes['bundle_id']
+        if(environment.casecmp("sandbox") == 0)
+          feedback_domain_name << ".debug"
         end
         
         puts "Starting parallel push with process_id = #{process_identifier} and message #{notification_message}"
@@ -132,6 +163,17 @@ module Process_APNS_PushNotifications
 
             # if there are, then quit, else then go ahead and mark this as complete
             if pending_queues.nil? || pending_queues.count == 0
+                Process_APNS_PushNotifications.set_notification_status(notification_item,"feedback")
+                
+                $feedback = Grocer.feedback(
+                  certificate: certificate_path,          # required
+                  gateway:     feedback_gateway,          # optional
+                  port:        2196,                       # optional
+                  retries:     3                          # optional
+                )
+                feedback_domain = SimpleDB.get_domain(feedback_domain_name)
+                Process_APNS_PushNotifications.process_feedback(domain)
+              
                 Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")
             end
           end
