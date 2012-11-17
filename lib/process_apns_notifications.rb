@@ -128,7 +128,7 @@ module Process_APNS_PushNotifications
         if(environment.casecmp("production") == 0)
           feedback_gateway = "feedback.push.apple.com"
         end
-        feedback_domain_name = notification_item.attributes['bundle_id']
+        feedback_domain_name = notification_item.attributes['bundle_id'].dup
         if(environment.casecmp("sandbox") == 0)
           feedback_domain_name << ".debug"
         end
@@ -171,6 +171,9 @@ module Process_APNS_PushNotifications
                   port:        2196,                       # optional
                   retries:     3                          # optional
                 )
+                
+                puts "Processing feedback for domain #{feedback_domain_name}"
+                
                 feedback_domain = SimpleDB.get_domain(feedback_domain_name)
                 Process_APNS_PushNotifications.process_feedback(domain)
               
