@@ -3,9 +3,11 @@ import 'lib/sqs.rb'
 import 'lib/s3.rb'
 require 'json'
 require 'grocer'
+require 'resque-status'
 
 # Schedule a whole bunch of push notifications
-module Process_APNS_PushNotifications
+class Process_APNS_PushNotifications
+      include Resque::Plugins::Status
   @queue = :apns_notifier
   
   $pusher = nil
@@ -85,11 +87,15 @@ module Process_APNS_PushNotifications
   end
   
   # Execute the job
-  def self.perform
+  def perform
     domain = SimpleDB.get_domain(SimpleDB.domain_for_notification_queues)
+    
+    tick()
   
     unless domain.nil?
       notification_queue_item = Process_APNS_PushNotifications.get_pending_queue(domain)
+      
+      tick()
       
       unless notification_queue_item.nil?
         process_identifier = SecureRandom.uuid
@@ -146,9 +152,12 @@ module Process_APNS_PushNotifications
         
           unless queue.nil?
             if queue.exists?
-              queue.poll(:initial_timeout => true,:idle_timeout => 15) {
-                |msg| Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
-              }
+              count = 0
+              queue.poll(:initial_timeout => true,:idle_timeout => 15) do |msg|
+                Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
+                count = count + 1
+                at(count,queue.approximate_number_of_messages,"Processing #{notification_queue_item.name}")
+              end
               queue.delete
             end
 
@@ -175,6 +184,7 @@ module Process_APNS_PushNotifications
                 puts "Processing feedback for domain #{feedback_domain_name}"
                 
                 feedback_domain = SimpleDB.get_domain(feedback_domain_name)
+                at(1,1,"Processing feedbacks")
                 Process_APNS_PushNotifications.process_feedback(domain)
               
                 Process_APNS_PushNotifications.set_notification_status(notification_item,"completed")

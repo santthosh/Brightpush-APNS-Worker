@@ -8,6 +8,7 @@ gem 'rack'
 gem 'rake'
 gem 'json'
 gem 'grocer'
+gem 'resque-status'
 
 group :development do
   gem 'capistrano', '2.8.0'
