@@ -4,7 +4,7 @@ function start {
 	mkdir -p ./tmp/pids
 	
 	echo "Starting the worker processes..."
-	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier0.pid QUEUE=apns_notifier bundle exec rake resque:work > worker1.log &
+	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier0.pid BACKGROUND=yes QUEUE=apns_notifier bundle exec rake resque:work > worker1.log
 
 	echo "Done"
 }
