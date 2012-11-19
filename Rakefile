@@ -26,6 +26,7 @@ namespace :resque do
     
     # Setup the shared redis server
     Resque.redis = $redis
+    Resque.redis.namespace = "resque"
   end
 end
 
