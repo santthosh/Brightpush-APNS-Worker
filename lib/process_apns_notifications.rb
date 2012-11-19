@@ -86,6 +86,10 @@ class Process_APNS_PushNotifications
     puts "APNS feedback tokens processed #{feedback_count}"
   end
   
+  def name
+    return "Process Apple Push Notifications"
+  end
+  
   # Execute the job
   def perform
     domain = SimpleDB.get_domain(SimpleDB.domain_for_notification_queues)
