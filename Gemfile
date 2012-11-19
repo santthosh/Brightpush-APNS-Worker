@@ -1,14 +1,14 @@
 source 'http://rubygems.org'
 
 gem 'rake'
-gem 'resque','1.20.0'
+gem 'resque'
 gem 'aws-sdk'
 gem 'multi_json','1.3.5'
 gem 'rack'
 gem 'rake'
 gem 'json'
 gem 'grocer'
-gem 'resque-status'
+gem 'resque-status', :git => "git://github.com/quirkey/resque-status.git", :branch => 'master'
 
 group :development do
   gem 'capistrano', '2.8.0'
