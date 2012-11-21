@@ -71,7 +71,7 @@ class Process_APNS_PushNotifications
     $feedback.each do |attempt|
       # If token doesn't exist skip it
      	unless domain.items[attempt.device_token].nil?
-     	  puts "Device #{attempt.device_token} failed at #{attempt.timestamp}"
+     	  Resque.logger.info("Device #{attempt.device_token} failed at #{attempt.timestamp}")
      	else 
      	  # Update it if necessary
      	  item = domain.items[attempt.device_token]
@@ -83,7 +83,7 @@ class Process_APNS_PushNotifications
      	end
     end
     
-    puts "APNS feedback tokens processed #{feedback_count}"
+    Resque.logger.info("APNS feedback tokens processed #{feedback_count}")
   end
   
   def name
@@ -113,8 +113,8 @@ class Process_APNS_PushNotifications
         # Read the scheduler_id, if it is the same set status to scheduling 
         #  -- if not quit (this means some other worker has started working)
         if process_identifier.to_s != notification_queue_item.attributes['process_id'].values.first.to_s
-          puts "process_id(#{process_identifier}) mismatch with 
-                notification_queue_item.process_id(#{notification_queue_item.attributes['process_id'].values.first})"
+          Resque.logger.info("process_id(#{process_identifier}) mismatch with 
+                notification_queue_item.process_id(#{notification_queue_item.attributes['process_id'].values.first})")
           return
         end
         
@@ -143,10 +143,10 @@ class Process_APNS_PushNotifications
           feedback_domain_name << ".debug"
         end
         
-        puts "Starting parallel push with process_id = #{process_identifier} and message #{notification_message}"
+        Resque.logger.info("Starting parallel push with process_id = #{process_identifier} and message #{notification_message}")
         
         begin   
-          puts "Provisioning : #{bundle_id}, #{certificate_path}, #{environment}"
+          Resque.logger.info("Provisioning : #{bundle_id}, #{certificate_path}, #{environment}")
           $pusher = Grocer.pusher(
              certificate: certificate_path,      # required
              gateway: gateway, 
@@ -157,6 +157,8 @@ class Process_APNS_PushNotifications
           unless queue.nil?
             if queue.exists?
               count = 0
+              Resque.logger.info("Sending Message : #{bundle_id}, #{notification_message}")
+              
               queue.poll(:initial_timeout => true,:idle_timeout => 15) do |msg|
                 Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
                 count = count + 1
@@ -185,7 +187,7 @@ class Process_APNS_PushNotifications
                   retries:     3                          # optional
                 )
                 
-                puts "Processing feedback for domain #{feedback_domain_name}"
+                Resque.logger.info("Processing feedback for domain #{feedback_domain_name}")
                 
                 feedback_domain = SimpleDB.get_domain(feedback_domain_name)
                 at(1,1,"Processing feedbacks")
@@ -195,13 +197,13 @@ class Process_APNS_PushNotifications
             end
           end
         rescue Exception => e
-          puts e.inspect
-          puts e.backtrace
+          Resque.logger.error(e.inspect)
+          Resque.logger.error(e.backtrace)
           # Set the scheduler_id in com.apple.notification
           Process_APNS_PushNotifications.set_queue_status(notification_queue_item,"errored",process_identifier)
         end
         
-        puts "Finished process with process_id = #{process_identifier}"
+        Resque.logger.info("Finished process with process_id = #{process_identifier}")
       end
     end
   end

@@ -6,6 +6,17 @@ GIT
     resque-status (0.4.0)
       resque (~> 1.19)
 
+GIT
+  remote: git://github.com/santthosh-aim/resque.git
+  revision: 3d2756b7350a4e10a70c91594757d1528061fc43
+  branch: 2.0+logging
+  specs:
+    resque (1.25.1)
+      json
+      redis-namespace (~> 1.0)
+      sinatra (>= 0.9.2)
+      vegas (~> 0.1.2)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -49,11 +60,6 @@ GEM
     redis (3.0.2)
     redis-namespace (1.2.1)
       redis (~> 3.0.0)
-    resque (1.23.0)
-      multi_json (~> 1.0)
-      redis-namespace (~> 1.0)
-      sinatra (>= 0.9.2)
-      vegas (~> 0.1.2)
     rspec (2.12.0)
       rspec-core (~> 2.12.0)
       rspec-expectations (~> 2.12.0)
@@ -94,7 +100,7 @@ DEPENDENCIES
   rack
   rack-test
   rake
-  resque
+  resque!
   resque-status!
   rspec (~> 2)
   rvm-capistrano

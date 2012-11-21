@@ -1,7 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'rake'
-gem 'resque'
+gem 'resque', :git => "git://github.com/santthosh-aim/resque.git", :branch => '2.0+logging'
 gem 'aws-sdk'
 gem 'multi_json','1.3.5'
 gem 'rack'
