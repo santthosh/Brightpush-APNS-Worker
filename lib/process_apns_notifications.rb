@@ -170,12 +170,10 @@ class Process_APNS_PushNotifications
         Resque.logger.info("Starting parallel push with process_id = #{process_identifier} and message #{notification_message}")
         
         begin   
-          Resque.logger.info("Provisioning : #{bundle_id}, #{certificate_path}, #{environment}")
-        
           unless queue.nil?
             if queue.exists?
               count = 0
-              Resque.logger.info("Sending Message : #{bundle_id}, #{notification_message}")
+              Resque.logger.info("Sending Message : #{bundle_id}, #{environment}, #{notification_message}")
               
               queue.poll(:initial_timeout => true,:idle_timeout => 15) do |msg|
                 Process_APNS_PushNotifications.send_push_message(bundle_id,msg.body,notification_message)
