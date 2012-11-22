@@ -7,7 +7,7 @@ gem 'multi_json','1.3.5'
 gem 'rack'
 gem 'rake'
 gem 'json'
-gem 'grocer'
+gem 'grocer', :git => "git@github.com:santthosh-aim/grocer.git", :branch => 'master'
 gem 'resque-status', :git => "git://github.com/quirkey/resque-status.git", :branch => 'master'
 
 group :development do

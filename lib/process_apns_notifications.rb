@@ -10,6 +10,8 @@ class Process_APNS_PushNotifications
       include Resque::Plugins::Status
   @queue = :apns_notifier
   
+  $certificate_path = nil
+  $gateway = nil
   $pusher = nil
   $feedback = nil
   
@@ -38,6 +40,18 @@ class Process_APNS_PushNotifications
      return results.first;
    end
    
+  # Create Pusher
+  def self.create_pusher
+    unless $pusher.nil?
+      $pusher = Grocer.pusher(
+         certificate: $certificate_path,      # required
+         gateway: $gateway, 
+         port: 2195,                     
+         retries: 3                         
+       )
+    end
+  end
+   
   # Send the Push Message to all the given device tokens
   def self.send_push_message(bundle_id,device_tokens,notification_message)
     tokens = device_tokens.split(',')
@@ -52,16 +66,26 @@ class Process_APNS_PushNotifications
     custom = message.clone
     custom.delete("aps")
     
+    # Create pusher instance
+    Process_APNS_PushNotifications.create_pusher
+    
     tokens.each do |token|
-      notification = Grocer::Notification.new(
-        device_token: token,
-        alert: alert,
-        badge: badge,
-        sound: sound,
-        custom: custom
-      )
+      begin 
+        notification = Grocer::Notification.new(
+          device_token: token,
+          alert: alert,
+          badge: badge,
+          sound: sound,
+          custom: custom
+          )
       
-      $pusher.push(notification)
+          $pusher.push(notification)
+      rescue Exception => e
+        Resque.logger.error("Token: #{token} failed with exception #{e.inspect}")
+        $pusher = nil
+        Process_APNS_PushNotifications.create_pusher
+        next
+      end
     end
   end
   
@@ -126,12 +150,12 @@ class Process_APNS_PushNotifications
         
         bundle_id = notification_item.attributes['bundle_id'].values.first.to_s
         certificate = notification_item.attributes['certificate'].values.first.to_s
-        certificate_path = S3.mounted_certificate_path + certificate
+        $certificate_path = S3.mounted_certificate_path + certificate
         environment = notification_item.attributes['environment'].values.first.to_s
         notification_message = notification_item.attributes['message'].values.first.to_s
-        gateway = "gateway.sandbox.push.apple.com"
+        $gateway = "gateway.sandbox.push.apple.com"
         if(environment.casecmp("production") == 0)
-          gateway = "gateway.push.apple.com"
+          $gateway = "gateway.push.apple.com"
         end
         
         feedback_gateway = "feedback.sandbox.push.apple.com"
@@ -147,12 +171,6 @@ class Process_APNS_PushNotifications
         
         begin   
           Resque.logger.info("Provisioning : #{bundle_id}, #{certificate_path}, #{environment}")
-          $pusher = Grocer.pusher(
-             certificate: certificate_path,      # required
-             gateway: gateway, 
-             port: 2195,                     
-             retries: 3                         
-           )
         
           unless queue.nil?
             if queue.exists?
