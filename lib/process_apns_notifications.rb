@@ -43,6 +43,7 @@ class Process_APNS_PushNotifications
   # Create Pusher
   def self.create_pusher
     if $pusher.nil?
+      Resque.logger.info("Connecting to APNS..")
       $pusher = Grocer.pusher(
          certificate: $certificate_path,      # required
          gateway: $gateway, 
