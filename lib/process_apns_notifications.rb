@@ -197,7 +197,7 @@ class Process_APNS_PushNotifications
                 Process_APNS_PushNotifications.set_notification_status(notification_item,"feedback")
                 
                 $feedback = Grocer.feedback(
-                  certificate: certificate_path,          # required
+                  certificate: $certificate_path,          # required
                   gateway:     feedback_gateway,          # optional
                   port:        2196,                       # optional
                   retries:     3                          # optional
