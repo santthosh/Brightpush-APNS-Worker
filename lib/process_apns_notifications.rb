@@ -42,7 +42,7 @@ class Process_APNS_PushNotifications
    
   # Create Pusher
   def self.create_pusher
-    unless $pusher.nil?
+    if $pusher.nil?
       $pusher = Grocer.pusher(
          certificate: $certificate_path,      # required
          gateway: $gateway, 
