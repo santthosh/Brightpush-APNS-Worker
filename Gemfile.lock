@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git://github.com/santthosh-aim/grocer.git
-  revision: 978fc7a922f33491cb3d95ba70c9881662849778
+  revision: e70bcbd02ace03fffd1eb9b17b57021fb0c4d973
   branch: master
   specs:
     grocer (0.2.1)
