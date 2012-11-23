@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git://github.com/santthosh-aim/grocer.git
-  revision: e70bcbd02ace03fffd1eb9b17b57021fb0c4d973
+  revision: 47c3160a90f72b7e7eea5c224485c1252be233bd
   branch: master
   specs:
     grocer (0.2.1)
@@ -52,7 +52,7 @@ GEM
       net-ssh (>= 1.99.1)
     net-sftp (2.0.5)
       net-ssh (>= 2.0.9)
-    net-ssh (2.6.1)
+    net-ssh (2.6.2)
     net-ssh-gateway (1.1.0)
       net-ssh (>= 1.99.1)
     nokogiri (1.5.5)
