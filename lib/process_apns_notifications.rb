@@ -43,7 +43,7 @@ class Process_APNS_PushNotifications
   # Create Pusher
   def self.create_pusher
     if $pusher.nil?
-      Resque.logger.info("Connecting to APNS..")
+      Resque.logger.info("Connecting to APNS..#{$certificate_path}, #{$gateway}")
       $pusher = Grocer.pusher(
          certificate: $certificate_path,      # required
          gateway: $gateway, 
@@ -83,6 +83,7 @@ class Process_APNS_PushNotifications
           $pusher.push(notification)
       rescue Exception => e
         Resque.logger.error("Token: #{token} failed with exception #{e.inspect}")
+        Resque.logger.error(e.backtrace)
         $pusher = nil
         Process_APNS_PushNotifications.create_pusher
         next

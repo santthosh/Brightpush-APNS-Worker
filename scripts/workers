@@ -6,6 +6,9 @@ function start {
 	echo "Starting the worker processes..."
 	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier0.pid BACKGROUND=yes QUEUE=apns_notifier bundle exec rake resque:work > worker1.log
 
+	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier1.pid BACKGROUND=yes QUEUE=apns_notifier bundle exec rake resque:work > worker2.log
+
+	RACK_ENV=$ENVIRONMENT PIDFILE=./tmp/pids/apns_notifier2.pid BACKGROUND=yes QUEUE=apns_notifier bundle exec rake resque:work > worker3.log
 	echo "Done"
 }
 
@@ -15,6 +18,16 @@ function stop {
 	if [ -f ./tmp/pids/apns_notifier0.pid ]; then
 		kill -9 `cat ./tmp/pids/apns_notifier0.pid`
 		rm ./tmp/pids/apns_notifier0.pid
+	fi
+	
+	if [ -f ./tmp/pids/apns_notifier1.pid ]; then
+		kill -9 `cat ./tmp/pids/apns_notifier1.pid`
+		rm ./tmp/pids/apns_notifier1.pid
+	fi
+	
+	if [ -f ./tmp/pids/apns_notifier2.pid ]; then
+		kill -9 `cat ./tmp/pids/apns_notifier2.pid`
+		rm ./tmp/pids/apns_notifier2.pid
 	fi
 
 	echo "Done"
