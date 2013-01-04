@@ -1,13 +1,13 @@
 source 'http://rubygems.org'
 
 gem 'rake'
-gem 'resque', :git => "git://github.com/santthosh-aim/resque.git", :branch => '2.0+logging'
+gem 'resque', :git => "git://github.com/santthosh/resque.git", :branch => '2.0+logging'
 gem 'aws-sdk'
 gem 'multi_json','1.3.5'
 gem 'rack'
 gem 'rake'
 gem 'json'
-gem 'grocer', :git => "git://github.com/santthosh-aim/grocer.git", :branch => 'master'
+gem 'grocer', :git => "git://github.com/santthosh/grocer.git", :branch => 'master'
 gem 'resque-status', :git => "git://github.com/quirkey/resque-status.git", :branch => 'master'
 
 group :development do
