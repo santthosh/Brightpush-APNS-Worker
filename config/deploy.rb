@@ -14,7 +14,7 @@ set :scm, :git
 set :scm_passphrase, ""
 set :application, "brightpush-apns-worker"
 set :deploy_to, "/var/www/brightpush-apns-worker"
-set :repository,  "git@bright.unfuddle.com:bright/brightpush-apns-worker.git"
+set :repository,  "git@github.com:santthosh/Brightpush-APNS-Worker.git"
 set :user, "ubuntu"
 set :rack_env,"development"
 
